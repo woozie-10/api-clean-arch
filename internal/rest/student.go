@@ -83,26 +83,28 @@ func (s *StudentHandler) GetByCourse(c *gin.Context) {
 
 func (s *StudentHandler) Add(c *gin.Context) {
 	var student *domain.Student
-	err := c.Bind(&student)
-	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
-	}
-	ctx := c.Request.Context()
-	err = s.Service.Add(ctx, student)
-	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
-		return
-	}
-	c.IndentedJSON(http.StatusCreated, student)
+
+    if err := c.ShouldBindJSON(&student); err != nil {
+        c.JSON(http.StatusUnprocessableEntity, ResponseError{err.Error()}})
+        return
+    }
+
+    ctx := c.Request.Context()
+    if err := s.Service.Add(ctx, student); err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    c.JSON(http.StatusCreated, student)
 }
 
 func (s *StudentHandler) Update(c *gin.Context) {
 	var newStudent *domain.Student
 	username := c.Param("username")
-	err := c.Bind(&newStudent)
-	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
-	}
+	if err := c.ShouldBindJSON(&newStudent); err != nil {
+        c.JSON(http.StatusUnprocessableEntity, ResponseError{err.Error()}})
+        return
+    }
 	ctx := c.Request.Context()
 	err = s.Service.Update(ctx, username, newStudent)
 	if err != nil {
