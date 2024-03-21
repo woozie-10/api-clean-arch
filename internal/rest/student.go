@@ -30,30 +30,95 @@ func NewStudentHandler(g *gin.Engine, svc StudentService) {
 	handler := &StudentHandler{
 		Service: svc,
 	}
-
+	g.GET("", handler.Get)
+	g.GET("/:username", handler.GetByUsername)
+	g.GET("/group/:group", handler.GetByGroup)
+	g.GET("course/:course", handler.GetByCourse)
+	g.POST("", handler.Add)
+	g.PUT("/:username", handler.Update)
+	g.DELETE("/:username", handler.Delete)
 }
 func (s *StudentHandler) Get(c *gin.Context) {
 	ctx := c.Request.Context()
 	students, err := s.Service.Get(ctx)
 	if err != nil {
-		c.IndentedJSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 		return
 	}
 	c.IndentedJSON(http.StatusOK, students)
 }
 
-func getStatusCode(err error) int {
-	if err == nil {
-		return http.StatusOK
+func (s *StudentHandler) GetByUsername(c *gin.Context) {
+	username := c.Param("username")
+	ctx := c.Request.Context()
+	student, err := s.Service.GetByUsername(ctx, username)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+		return
 	}
-	switch err {
-	case domain.ErrInternalServerError:
-		return http.StatusInternalServerError
-	case domain.ErrNotFound:
-		return http.StatusNotFound
-	case domain.ErrConflict:
-		return http.StatusConflict
-	default:
-		return http.StatusInternalServerError
+	c.IndentedJSON(http.StatusOK, student)
+}
+
+func (s *StudentHandler) GetByGroup(c *gin.Context) {
+	group := c.Param("group")
+	ctx := c.Request.Context()
+	students, err := s.Service.GetByGroup(ctx, group)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+		return
 	}
+	c.IndentedJSON(http.StatusOK, students)
+}
+
+func (s *StudentHandler) GetByCourse(c *gin.Context) {
+	course := c.Param("course")
+	ctx := c.Request.Context()
+	students, err := s.Service.GetByCourse(ctx, course)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, students)
+}
+
+func (s *StudentHandler) Add(c *gin.Context) {
+	var student *domain.Student
+	err := c.Bind(&student)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
+	}
+	ctx := c.Request.Context()
+	err = s.Service.Add(ctx, student)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+		return
+	}
+	c.IndentedJSON(http.StatusCreated, student)
+}
+
+func (s *StudentHandler) Update(c *gin.Context) {
+	var newStudent *domain.Student
+	username := c.Param("username")
+	err := c.Bind(&newStudent)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
+	}
+	ctx := c.Request.Context()
+	err = s.Service.Update(ctx, username, newStudent)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, newStudent)
+}
+
+func (s *StudentHandler) Delete(c *gin.Context) {
+	username := c.Param("username")
+	ctx := c.Request.Context()
+	err := s.Service.Delete(ctx, username)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "the student was successfully removed"})
 }
