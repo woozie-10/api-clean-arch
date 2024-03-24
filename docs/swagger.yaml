@@ -1,0 +1,230 @@
+basePath: /
+definitions:
+  domain.Student:
+    properties:
+      course:
+        type: string
+      firstname:
+        type: string
+      group:
+        type: string
+      lastname:
+        type: string
+      specialty:
+        type: string
+      username:
+        type: string
+    type: object
+  rest.Response:
+    properties:
+      message:
+        type: string
+    type: object
+  rest.ResponseError:
+    properties:
+      message:
+        type: string
+    type: object
+host: localhost:9090
+info:
+  contact: {}
+  description: This is a  API for managing students.
+  title: Students REST API
+  version: "1.0"
+paths:
+  /students:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of all students from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of students
+          schema:
+            items:
+              $ref: '#/definitions/domain.Student'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+      summary: Retrieve a list of students
+      tags:
+      - students
+    post:
+      consumes:
+      - application/json
+      description: Add a new student to the database
+      parameters:
+      - description: Student object to add
+        in: body
+        name: student
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Student'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Added student
+          schema:
+            $ref: '#/definitions/domain.Student'
+        "422":
+          description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+      summary: Add a new student
+      tags:
+      - students
+  /students/{username}:
+    delete:
+      description: Delete an existing student from the database
+      parameters:
+      - description: Username of the student to delete
+        in: path
+        name: username
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Message indicating successful deletion
+          schema:
+            $ref: '#/definitions/rest.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+      summary: Delete a student
+      tags:
+      - students
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a student by their username from the database
+      parameters:
+      - description: Username of the student to retrieve
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Student details
+          schema:
+            $ref: '#/definitions/domain.Student'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+      summary: Get student by username
+      tags:
+      - students
+    put:
+      consumes:
+      - application/json
+      description: Update an existing student in the database
+      parameters:
+      - description: Username of the student to update
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: New student data
+        in: body
+        name: newStudent
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Student'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated student
+          schema:
+            $ref: '#/definitions/domain.Student'
+        "422":
+          description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+      summary: Update a student
+      tags:
+      - students
+  /students/course/{course}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of students by their course from the database
+      parameters:
+      - description: Course of the students to retrieve
+        in: path
+        name: course
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of students
+          schema:
+            items:
+              $ref: '#/definitions/domain.Student'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+      summary: Get students by course
+      tags:
+      - students
+  /students/group/{group}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of students by their group from the database
+      parameters:
+      - description: Group of the students to retrieve
+        in: path
+        name: group
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of students
+          schema:
+            items:
+              $ref: '#/definitions/domain.Student'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+      summary: Get students by group
+      tags:
+      - students
+swagger: "2.0"
