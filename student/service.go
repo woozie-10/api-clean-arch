@@ -5,6 +5,7 @@ import (
 
 	"github.com/woozie-10/api-clean-arch/domain"
 )
+
 type StudentRepository interface {
 	Get(ctx context.Context) ([]*domain.Student, error)
 	GetByUsername(ctx context.Context, username string) (*domain.Student, error)
@@ -40,7 +41,7 @@ func (s *Service) Delete(ctx context.Context, username string) error {
 func (s *Service) GetByGroup(ctx context.Context, group string) ([]*domain.Student, error) {
 	return s.studentRepo.GetByGroup(ctx, group)
 }
-func (s *Service) GetByCourse(ctx context.Context, course string) ([]*domain.Student, error){
+func (s *Service) GetByCourse(ctx context.Context, course string) ([]*domain.Student, error) {
 	return s.studentRepo.GetByCourse(ctx, course)
 }
 func (s *Service) Update(ctx context.Context, username string, newStudent *domain.Student) error {
