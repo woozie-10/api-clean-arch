@@ -5,7 +5,6 @@ import (
 
 	"github.com/woozie-10/api-clean-arch/domain"
 )
-
 type StudentRepository interface {
 	Get(ctx context.Context) ([]*domain.Student, error)
 	GetByUsername(ctx context.Context, username string) (*domain.Student, error)
