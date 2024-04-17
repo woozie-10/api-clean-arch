@@ -16,13 +16,20 @@ type StudentRepository interface {
 	Update(ctx context.Context, username string, newStudent *domain.Student) error
 }
 
-type Service struct {
-	studentRepo StudentRepository
+type AssessmentRepository interface {
+	Get(ctx context.Context, username string) (*domain.Assessment, error)
+	Add(ctx context.Context, assessment *domain.Assessment) error
 }
 
-func NewService(sr StudentRepository) *Service {
+type Service struct {
+	studentRepo    StudentRepository
+	assessmentRepo AssessmentRepository
+}
+
+func NewService(sr StudentRepository, ar AssessmentRepository) *Service {
 	return &Service{
-		studentRepo: sr,
+		studentRepo:    sr,
+		assessmentRepo: ar,
 	}
 }
 
@@ -46,4 +53,12 @@ func (s *Service) GetByCourse(ctx context.Context, course string) ([]*domain.Stu
 }
 func (s *Service) Update(ctx context.Context, username string, newStudent *domain.Student) error {
 	return s.studentRepo.Update(ctx, username, newStudent)
+}
+
+func (s *Service) GetAssessment(ctx context.Context, username string) (*domain.Assessment, error) {
+	return s.assessmentRepo.Get(ctx, username)
+}
+
+func (s *Service) AddAssessment(ctx context.Context, assessment *domain.Assessment) error {
+	return s.assessmentRepo.Add(ctx, assessment)
 }
