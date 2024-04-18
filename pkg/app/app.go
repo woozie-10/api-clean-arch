@@ -7,37 +7,40 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/woozie-10/api-clean-arch/internal/rest"
 	mongo2 "github.com/woozie-10/api-clean-arch/internal/repository/mongo"
+	"github.com/woozie-10/api-clean-arch/internal/rest"
 	"github.com/woozie-10/api-clean-arch/student"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type App struct {
-	s student.Service
-	g *gin.Engine
+	sSvc student.StudentService
+	aSvc student.AssessmentService
+	g    *gin.Engine
 }
 
 func NewApp() *App {
 	db := initDB()
-	studentRepo := mongo2.NewStudentRepository(db, os.Getenv("COLLECTION_NAME"))
-	svc := student.NewService(studentRepo)
+	studentRepo := mongo2.NewStudentRepository(db, "students")
+	assessmentsRepo := mongo2.NewAssessmentRepository(db, "assessments")
+	sSvc := student.NewStudentService(studentRepo)
+	aSvc := student.NewAssessmentService(assessmentsRepo)
 	ginEngine := gin.Default()
 	return &App{
-		s: *svc,
-		g: ginEngine,
+		sSvc: *sSvc,
+		aSvc: *aSvc,
+		g:    ginEngine,
 	}
 }
 
-
 func (a *App) Run(port string) error {
-	rest.NewStudentHandler(a.g, &a.s)
+	rest.NewStudentHandler(a.g, &a.sSvc, &a.aSvc)
 	a.g.Use(
 		gin.Recovery(),
 		gin.Logger(),
 	)
-	err := a.g.Run("0.0.0.0:"+port)
+	err := a.g.Run("0.0.0.0:" + port)
 	if err != nil {
 		return err
 	}

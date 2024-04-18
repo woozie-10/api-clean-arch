@@ -21,44 +21,48 @@ type AssessmentRepository interface {
 	Add(ctx context.Context, assessment *domain.Assessment) error
 }
 
-type Service struct {
-	studentRepo    StudentRepository
+type StudentService struct {
+	studentRepo StudentRepository
+}
+
+func NewStudentService(studentRepo StudentRepository) *StudentService {
+	return &StudentService{studentRepo: studentRepo}
+}
+
+type AssessmentService struct {
 	assessmentRepo AssessmentRepository
 }
 
-func NewService(sr StudentRepository, ar AssessmentRepository) *Service {
-	return &Service{
-		studentRepo:    sr,
-		assessmentRepo: ar,
-	}
+func NewAssessmentService(assessmentRepo AssessmentRepository) *AssessmentService {
+	return &AssessmentService{assessmentRepo: assessmentRepo}
 }
 
-func (s *Service) Get(ctx context.Context) ([]*domain.Student, error) {
+func (s *StudentService) Get(ctx context.Context) ([]*domain.Student, error) {
 	return s.studentRepo.Get(ctx)
 }
-func (s *Service) GetByUsername(ctx context.Context, username string) (*domain.Student, error) {
+func (s *StudentService) GetByUsername(ctx context.Context, username string) (*domain.Student, error) {
 	return s.studentRepo.GetByUsername(ctx, username)
 }
-func (s *Service) Add(ctx context.Context, student *domain.Student) error {
+func (s *StudentService) Add(ctx context.Context, student *domain.Student) error {
 	return s.studentRepo.Add(ctx, student)
 }
-func (s *Service) Delete(ctx context.Context, username string) error {
+func (s *StudentService) Delete(ctx context.Context, username string) error {
 	return s.studentRepo.Delete(ctx, username)
 }
-func (s *Service) GetByGroup(ctx context.Context, group string) ([]*domain.Student, error) {
+func (s *StudentService) GetByGroup(ctx context.Context, group string) ([]*domain.Student, error) {
 	return s.studentRepo.GetByGroup(ctx, group)
 }
-func (s *Service) GetByCourse(ctx context.Context, course string) ([]*domain.Student, error) {
+func (s *StudentService) GetByCourse(ctx context.Context, course string) ([]*domain.Student, error) {
 	return s.studentRepo.GetByCourse(ctx, course)
 }
-func (s *Service) Update(ctx context.Context, username string, newStudent *domain.Student) error {
+func (s *StudentService) Update(ctx context.Context, username string, newStudent *domain.Student) error {
 	return s.studentRepo.Update(ctx, username, newStudent)
 }
 
-func (s *Service) GetAssessment(ctx context.Context, username string) (*domain.Assessment, error) {
+func (s *AssessmentService) Get(ctx context.Context, username string) (*domain.Assessment, error) {
 	return s.assessmentRepo.Get(ctx, username)
 }
 
-func (s *Service) AddAssessment(ctx context.Context, assessment *domain.Assessment) error {
+func (s *AssessmentService) Add(ctx context.Context, assessment *domain.Assessment) error {
 	return s.assessmentRepo.Add(ctx, assessment)
 }

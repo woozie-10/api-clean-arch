@@ -16,6 +16,7 @@ type ResponseError struct {
 type Response struct {
 	Message string `json:"message"`
 }
+
 //go:generate mockery --name StudentService
 type StudentService interface {
 	Get(ctx context.Context) ([]*domain.Student, error)
@@ -27,13 +28,20 @@ type StudentService interface {
 	Update(ctx context.Context, username string, newStudent *domain.Student) error
 }
 
-type StudentHandler struct {
-	Service StudentService
+type AssessmentService interface {
+	Get(ctx context.Context, username string) (*domain.Assessment, error)
+	Add(ctx context.Context, assessment *domain.Assessment) error
 }
 
-func NewStudentHandler(g *gin.Engine, svc StudentService) {
+type StudentHandler struct {
+	studentSvc    StudentService
+	assessmentSvc AssessmentService
+}
+
+func NewStudentHandler(g *gin.Engine, ssvc StudentService, asvc AssessmentService) {
 	handler := &StudentHandler{
-		Service: svc,
+		studentSvc:    ssvc,
+		assessmentSvc: asvc,
 	}
 	g.GET("/students", handler.Get)
 	g.GET("/students/:username", handler.GetByUsername)
@@ -42,6 +50,8 @@ func NewStudentHandler(g *gin.Engine, svc StudentService) {
 	g.POST("/students", handler.Add)
 	g.PUT("/students/:username", handler.Update)
 	g.DELETE("/students/:username", handler.Delete)
+
+	g.GET("/assessments/:username", handler.Get)
 
 	g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -58,7 +68,7 @@ func NewStudentHandler(g *gin.Engine, svc StudentService) {
 // @Router /students [get]
 func (s *StudentHandler) Get(c *gin.Context) {
 	ctx := c.Request.Context()
-	students, err := s.Service.Get(ctx)
+	students, err := s.studentSvc.Get(ctx)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 		return
@@ -80,7 +90,7 @@ func (s *StudentHandler) Get(c *gin.Context) {
 func (s *StudentHandler) GetByUsername(c *gin.Context) {
 	username := c.Param("username")
 	ctx := c.Request.Context()
-	student, err := s.Service.GetByUsername(ctx, username)
+	student, err := s.studentSvc.GetByUsername(ctx, username)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 		return
@@ -102,7 +112,7 @@ func (s *StudentHandler) GetByUsername(c *gin.Context) {
 func (s *StudentHandler) GetByGroup(c *gin.Context) {
 	group := c.Param("group")
 	ctx := c.Request.Context()
-	students, err := s.Service.GetByGroup(ctx, group)
+	students, err := s.studentSvc.GetByGroup(ctx, group)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 		return
@@ -124,7 +134,7 @@ func (s *StudentHandler) GetByGroup(c *gin.Context) {
 func (s *StudentHandler) GetByCourse(c *gin.Context) {
 	course := c.Param("course")
 	ctx := c.Request.Context()
-	students, err := s.Service.GetByCourse(ctx, course)
+	students, err := s.studentSvc.GetByCourse(ctx, course)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 		return
@@ -152,7 +162,7 @@ func (s *StudentHandler) Add(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	if err := s.Service.Add(ctx, student); err != nil {
+	if err := s.studentSvc.Add(ctx, student); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -180,7 +190,7 @@ func (s *StudentHandler) Update(c *gin.Context) {
 		return
 	}
 	ctx := c.Request.Context()
-	err := s.Service.Update(ctx, username, newStudent)
+	err := s.studentSvc.Update(ctx, username, newStudent)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 		return
@@ -199,10 +209,36 @@ func (s *StudentHandler) Update(c *gin.Context) {
 func (s *StudentHandler) Delete(c *gin.Context) {
 	username := c.Param("username")
 	ctx := c.Request.Context()
-	err := s.Service.Delete(ctx, username)
+	err := s.studentSvc.Delete(ctx, username)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 		return
 	}
 	c.IndentedJSON(http.StatusOK, Response{Message: "the student was successfully removed"})
+}
+
+func (s *StudentHandler) GetAssessment(c *gin.Context) {
+	username := c.Param("username")
+	ctx := c.Request.Context()
+	assessment, err := s.assessmentSvc.Get(ctx, username)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, assessment)
+}
+
+func (s *StudentHandler) AddAssessment(c *gin.Context) {
+	var assessment *domain.Assessment
+	if err := c.ShouldBindJSON(&assessment); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
+		return
+	}
+	ctx := c.Request.Context()
+	err := s.assessmentSvc.Add(ctx, assessment)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+		return
+	}
+	c.IndentedJSON(http.StatusCreated, assessment)
 }
