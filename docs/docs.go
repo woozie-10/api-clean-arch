@@ -15,6 +15,93 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/assessments": {
+            "post": {
+                "description": "Adds a new assessment for a student.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Assessments"
+                ],
+                "summary": "Add an assessment",
+                "parameters": [
+                    {
+                        "description": "Assessment details",
+                        "name": "assessment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.Assessment"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created assessment",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Assessment"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ResponseError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ResponseError"
+                        }
+                    }
+                }
+            }
+        },
+        "/assessments/{username}": {
+            "get": {
+                "description": "Retrieves an assessment for a student by username.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Assessments"
+                ],
+                "summary": "Retrieve an assessment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username of the student",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Retrieved assessment",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Assessment"
+                        }
+                    },
+                    "404": {
+                        "description": "Assessment not found",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ResponseError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ResponseError"
+                        }
+                    }
+                }
+            }
+        },
         "/students": {
             "get": {
                 "description": "Returns a list of all students from the database",
@@ -312,6 +399,23 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "domain.Assessment": {
+            "type": "object",
+            "properties": {
+                "marks": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "domain.Student": {
             "type": "object",
             "properties": {

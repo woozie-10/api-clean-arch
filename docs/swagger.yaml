@@ -1,5 +1,16 @@
 basePath: /
 definitions:
+  domain.Assessment:
+    properties:
+      marks:
+        additionalProperties:
+          items:
+            type: integer
+          type: array
+        type: object
+      username:
+        type: string
+    type: object
   domain.Student:
     properties:
       course:
@@ -32,6 +43,63 @@ info:
   title: Students REST API
   version: "1.0"
 paths:
+  /assessments:
+    post:
+      consumes:
+      - application/json
+      description: Adds a new assessment for a student.
+      parameters:
+      - description: Assessment details
+        in: body
+        name: assessment
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Assessment'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created assessment
+          schema:
+            $ref: '#/definitions/domain.Assessment'
+        "422":
+          description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+      summary: Add an assessment
+      tags:
+      - Assessments
+  /assessments/{username}:
+    get:
+      description: Retrieves an assessment for a student by username.
+      parameters:
+      - description: Username of the student
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Retrieved assessment
+          schema:
+            $ref: '#/definitions/domain.Assessment'
+        "404":
+          description: Assessment not found
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/rest.ResponseError'
+      summary: Retrieve an assessment
+      tags:
+      - Assessments
   /students:
     get:
       consumes:

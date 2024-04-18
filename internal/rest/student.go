@@ -51,7 +51,8 @@ func NewStudentHandler(g *gin.Engine, ssvc StudentService, asvc AssessmentServic
 	g.PUT("/students/:username", handler.Update)
 	g.DELETE("/students/:username", handler.Delete)
 
-	g.GET("/assessments/:username", handler.Get)
+	g.POST("/assessments", handler.AddAssessment)
+	g.GET("/assessments/:username", handler.GetAssessment)
 
 	g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -217,6 +218,16 @@ func (s *StudentHandler) Delete(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, Response{Message: "the student was successfully removed"})
 }
 
+// GetAssessment retrieves an assessment for a student by username.
+// @Summary Retrieve an assessment
+// @Description Retrieves an assessment for a student by username.
+// @Tags Assessments
+// @Param username path string true "Username of the student"
+// @Produce json
+// @Success 200 {object} domain.Assessment "Retrieved assessment"
+// @Failure 404 {object} ResponseError "Assessment not found"
+// @Failure 500 {object} ResponseError "Internal server error"
+// @Router /assessments/{username} [get]
 func (s *StudentHandler) GetAssessment(c *gin.Context) {
 	username := c.Param("username")
 	ctx := c.Request.Context()
@@ -228,14 +239,25 @@ func (s *StudentHandler) GetAssessment(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, assessment)
 }
 
+// AddAssessment adds an assessment for a student.
+// @Summary Add an assessment
+// @Description Adds a new assessment for a student.
+// @Tags Assessments
+// @Accept json
+// @Produce json
+// @Param assessment body domain.Assessment true "Assessment details"
+// @Success 201 {object} domain.Assessment "Created assessment"
+// @Failure 422 {object} ResponseError "Unprocessable entity"
+// @Failure 500 {object} ResponseError "Internal server error"
+// @Router /assessments [post]
 func (s *StudentHandler) AddAssessment(c *gin.Context) {
-	var assessment *domain.Assessment
+	var assessment domain.Assessment
 	if err := c.ShouldBindJSON(&assessment); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
 		return
 	}
 	ctx := c.Request.Context()
-	err := s.assessmentSvc.Add(ctx, assessment)
+	err := s.assessmentSvc.Add(ctx, &assessment)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 		return
