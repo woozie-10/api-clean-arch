@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/woozie-10/api-clean-arch/assessment"
 	mongo2 "github.com/woozie-10/api-clean-arch/internal/repository/mongo"
 	"github.com/woozie-10/api-clean-arch/internal/rest"
 	"github.com/woozie-10/api-clean-arch/student"
@@ -16,7 +17,7 @@ import (
 
 type App struct {
 	sSvc student.StudentService
-	aSvc student.AssessmentService
+	aSvc assessment.AssessmentService
 	g    *gin.Engine
 }
 
@@ -25,7 +26,7 @@ func NewApp() *App {
 	studentRepo := mongo2.NewStudentRepository(db, "students")
 	assessmentsRepo := mongo2.NewAssessmentRepository(db, "assessments")
 	sSvc := student.NewStudentService(studentRepo)
-	aSvc := student.NewAssessmentService(assessmentsRepo)
+	aSvc := assessment.NewAssessmentService(assessmentsRepo)
 	ginEngine := gin.Default()
 	return &App{
 		sSvc: *sSvc,
