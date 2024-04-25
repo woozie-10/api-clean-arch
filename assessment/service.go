@@ -5,7 +5,6 @@ import (
 
 	"github.com/woozie-10/api-clean-arch/domain"
 )
-
 type AssessmentRepository interface {
 	Get(ctx context.Context, username string) (*domain.Assessment, error)
 	Add(ctx context.Context, assessment *domain.Assessment) error

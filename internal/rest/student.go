@@ -17,7 +17,6 @@ type Response struct {
 	Message string `json:"message"`
 }
 
-//go:generate mockery --name StudentService
 type StudentService interface {
 	Get(ctx context.Context) ([]*domain.Student, error)
 	GetByUsername(ctx context.Context, username string) (*domain.Student, error)
