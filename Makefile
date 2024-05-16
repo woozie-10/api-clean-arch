@@ -6,3 +6,5 @@ down:
 	docker-compose down
 swag:
 	swag init -g cmd/main.go -o docs
+linter:
+	golangci-lint run
