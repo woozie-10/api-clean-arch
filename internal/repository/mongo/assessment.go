@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+
 	"github.com/woozie-10/api-clean-arch/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -34,7 +35,7 @@ func (r AssessmentRepository) Add(ctx context.Context, assessment *domain.Assess
 		update = append(update, bson.E{
 			Key: "$push",
 			Value: bson.D{
-				{"marks." + subject, bson.D{{"$each", grades}}},
+				{Key: "marks." + subject, Value: bson.D{{Key: "$each", Value: grades}}},
 			},
 		})
 	}
